@@ -8,7 +8,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node src/index.ts",
+    "start": "ts-node -r tsconfig-paths/register src/index.ts",
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts",
     "build": "tsc",
     "serve": "node dist/index.js",
@@ -30,7 +30,10 @@
     "module-alias": "^2.2.3",
     "nodemailer": "^7.0.11",
     "pg": "^8.16.3",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -41,10 +44,7 @@
     "@types/nodemailer": "^7.0.4",
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.7",
-    "nodemon": "^3.1.11",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "nodemon": "^3.1.11"
   },
   "_moduleAliases": {
     "@controllers": "./src/controllers",

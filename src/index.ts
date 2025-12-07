@@ -1,5 +1,5 @@
 import { userRoutes } from "@routes/userRoutes";
-import  cors from "cors";
+import cors from "cors";
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
@@ -8,6 +8,7 @@ import attendanceRoutes from "./routes/attendanceRoutes";
 import lectureRoutes from "./routes/lectureRoutes";
 import { logger } from "./utils/logger";
 import asyncHandler from "@utils/asyncHandler";
+import "tsconfig-paths/lib/register";
 
 /**
  * Attenex Backend Server
