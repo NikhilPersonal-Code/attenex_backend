@@ -57,7 +57,7 @@ export const emailSignUp = async (req: Request, res: Response) => {
       );
 
       try {
-        sendVerificationEmail({
+        await sendVerificationEmail({
           email: newUser[0].email,
           id: newUser[0].id,
           name: newUser[0].name,
