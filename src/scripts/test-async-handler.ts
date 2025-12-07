@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/asyncHandler";
+import asyncHandler from "../utils/asyncHandler";
 
 // Very simple smoke test that asyncHandler forwards errors to next()
 async function run() {

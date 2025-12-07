@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import { logger } from "../../../src/shared/utils/logger";
+import { logger } from "@utils/logger";
 
 export interface AuthRequest extends Request {
   user?: any;
