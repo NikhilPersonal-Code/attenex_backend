@@ -10,6 +10,26 @@ import { logger } from "./utils/logger";
 import asyncHandler from "@utils/asyncHandler";
 import "tsconfig-paths/lib/register";
 
+// Validate required environment variables
+const requiredEnvVars = [
+  "JWT_SECRET",
+  "GMAIL_USER",
+  "GMAIL_APP_PASSWORD",
+  "DATABASE_URL",
+];
+const missingEnvVars = requiredEnvVars.filter(
+  (varName) => !process.env[varName]
+);
+
+if (missingEnvVars.length > 0) {
+  logger.error(
+    `Missing required environment variables: ${missingEnvVars.join(", ")}`
+  );
+  logger.warn(
+    "Email functionality will fail without GMAIL_USER and GMAIL_APP_PASSWORD"
+  );
+}
+
 /**
  * Attenex Backend Server
  *

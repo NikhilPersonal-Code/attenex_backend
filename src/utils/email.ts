@@ -7,11 +7,15 @@ export const getTransporter = () => {
   // Setup email transporter
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
-    secure: true,
+    port: 587,
+    secure: false, // Use TLS
     auth: {
       user: process.env.GMAIL_USER!,
       pass: process.env.GMAIL_APP_PASSWORD!,
     },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000, // 5 seconds
+    socketTimeout: 10000, // 10 seconds
   });
 };
 
@@ -84,14 +88,32 @@ export const sendVerificationEmail = async ({
 
   // Send email (do not block signup; log error if sending fails)
   try {
+    // Verify transporter configuration
+    await transporter.verify();
+
     await transporter.sendMail({
-      from: process.env.GMAIL_USER,
+      from: `"Attenex" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: "Verify your email — Attenex",
       text,
       html,
     });
-  } catch (sendError) {
+
+    logger.info(`Verification email sent successfully to ${email}`);
+  } catch (sendError: any) {
     logger.error("Failed to send verification email:", sendError);
+
+    // Log specific error details for debugging
+    if (sendError.code === "ETIMEDOUT") {
+      logger.error("SMTP connection timeout - check network/firewall settings");
+    } else if (sendError.code === "EAUTH") {
+      logger.error(
+        "SMTP authentication failed - check GMAIL_USER and GMAIL_APP_PASSWORD"
+      );
+    } else if (sendError.code === "ECONNECTION") {
+      logger.error("Cannot connect to SMTP server - check host and port");
+    }
+
+    throw sendError; // Re-throw to be caught by caller
   }
 };
