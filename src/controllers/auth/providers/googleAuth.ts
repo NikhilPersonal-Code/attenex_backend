@@ -46,7 +46,7 @@ export const googleAuth = async (req: Request, res: Response) => {
         email,
         oauthId: oauth_id,
         oauthProvider: oauth_provider,
-        photoUrl: photo_url || null,
+        photoUrl: photo_url,
         isVerified: true,
       })
       .returning({
