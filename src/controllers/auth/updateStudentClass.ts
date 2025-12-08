@@ -45,33 +45,19 @@ export const updateStudentClass = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Find or create the class
-    let classRecord = await db
+    // Find classes with matching name (can be multiple teachers with same class name)
+    const classRecords = await db
       .select()
       .from(classes)
-      .where(eq(classes.name, className.trim()))
-      .limit(1);
+      .where(eq(classes.name, className.trim()));
 
-    let exisitingClassName: string;
-
-    if (classRecord.length > 0) {
-      exisitingClassName = classRecord[0].name;
-      logger.info(`Found existing class: ${exisitingClassName} for student: ${userId}`);
+    if (classRecords.length > 0) {
+      logger.info(`Found ${classRecords.length} class(es) with name: ${className.trim()}`);
     } else {
-      // Create new class with no teacher (student-created class)
-      const newClass = await db
-        .insert(classes)
-        .values({
-          name: className.trim(),
-          teacherId: null, // Student-created classes have no teacher
-        })
-        .returning();
-
-      let newClassName = newClass[0].name;
-      logger.info(`Created new class: ${newClassName} for student: ${userId}`);
+      logger.info(`No existing class found with name: ${className.trim()}`);
     }
 
-    // Update the student's class
+    // Update the student's class name (they will join any lecture with this class name)
     const updatedUser = await db
       .update(users)
       .set({

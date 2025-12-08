@@ -47,7 +47,7 @@ export const getAllLectures = async (req: AuthRequest, res: Response) => {
         teacherLongitude: lectures.teacherLongitude,
       })
       .from(lectures)
-      .fullJoin(classes, eq(lectures.className, classes.name))
+      .leftJoin(classes, eq(lectures.classId, classes.id))
       .where(eq(lectures.teacherId, userId))
       .orderBy(desc(lectures.createdAt));
 

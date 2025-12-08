@@ -46,7 +46,7 @@ export const getActiveLectures = async (req: AuthRequest, res: Response) => {
         teacherLongitude: lectures.teacherLongitude,
       })
       .from(lectures)
-      .fullJoin(classes, eq(lectures.className, classes.name))
+      .leftJoin(classes, eq(lectures.classId, classes.id))
       .where(and(eq(lectures.teacherId, userId), eq(lectures.status, "active")))
       .orderBy(lectures.createdAt);
 

@@ -56,14 +56,13 @@ export const getStudentLectures = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Get the student's class name
-    const studentClass = await db
+    // Find all classes with matching name (can be multiple teachers)
+    const matchingClasses = await db
       .select()
       .from(classes)
-      .where(eq(classes.name, studentClassName))
-      .limit(1);
+      .where(eq(classes.name, studentClassName));
 
-    if (studentClass.length === 0) {
+    if (matchingClasses.length === 0) {
       return res.status(200).json({
         success: true,
         data: [],
@@ -71,6 +70,8 @@ export const getStudentLectures = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // Get all class IDs with this name
+    const classIds = matchingClasses.map(c => c.id);
 
     // Fetch all active lectures for classes with matching name
     const activeLectures = await db
@@ -86,7 +87,7 @@ export const getStudentLectures = async (req: AuthRequest, res: Response) => {
         teacherLongitude: lectures.teacherLongitude,
       })
       .from(lectures)
-      .leftJoin(classes, eq(lectures.className, classes.name))
+      .leftJoin(classes, eq(lectures.classId, classes.id))
       .where(
         and(eq(classes.name, studentClassName), eq(lectures.status, "active"))
       )

@@ -125,17 +125,27 @@ export const users = pgTable(
  *
  * Represents a course or class that teachers create and students join.
  * Each class has one teacher and can have multiple students.
+ * Uses composite primary key (name, teacherId) to allow same class names for different teachers.
  */
 export const classes = pgTable(
   "classes",
   {
-    name: text("name").notNull().primaryKey(), // Class name (e.g., "Computer Science 101")
-    teacherId: uuid("teacher_id").references(() => users.id), // Teacher who created the class
+    id: uuid("id").defaultRandom().notNull(), // Unique identifier for easier references
+    name: text("name").notNull(), // Class name (e.g., "Computer Science 101")
+    teacherId: uuid("teacher_id")
+      .references(() => users.id)
+      .notNull(), // Teacher who created the class
     metadata: jsonb("metadata"), // Flexible storage for class settings, schedule, etc.
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   },
-  (table) => [index("classes_teacher_idx").on(table.teacherId)] // Find classes by teacher
+  (table) => {
+    return {
+      pk: { name: "classes_pkey", columns: [table.name, table.teacherId] }, // Composite primary key
+      teacherIdx: index("classes_teacher_idx").on(table.teacherId), // Find classes by teacher
+      idIdx: uniqueIndex("classes_id_idx").on(table.id), // Unique constraint on id
+    };
+  }
 );
 
 /**
@@ -151,9 +161,9 @@ export const lectures = pgTable(
     teacherId: uuid("teacher_id")
       .references(() => users.id)
       .notNull(), // Teacher conducting the lecture
-    className: text("class_name")
-      .references(() => classes.name)
-      .notNull(), // Class this lecture belongs to
+    classId: uuid("class_id")
+      .references(() => classes.id)
+      .notNull(), // Class this lecture belongs to (references class id)
     title: text("title").notNull(), // Lecture title/topic
     sessionToken: uuid("session_token").defaultRandom(), // Unique token for this session
     passcode: varchar("passcode", { length: 4 }), // 4-digit passcode that refreshes every 10 seconds
@@ -169,7 +179,7 @@ export const lectures = pgTable(
   },
   (table) => [
     index("lectures_teacher_status_idx").on(table.teacherId, table.status), // Active lectures by teacher
-    index("lectures_class_idx").on(table.className), // Lectures in a class
+    index("lectures_class_idx").on(table.classId), // Lectures in a class
   ]
 );
 
@@ -296,6 +306,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   class: one(classes, {
     fields: [users.className],
     references: [classes.name],
+    relationName: "studentClass",
   }), // Student belongs to one class
   teachingClasses: many(classes), // Teacher can teach many classes
   lecturesAsTeacher: many(lectures), // Teacher conducts many lectures
@@ -310,7 +321,7 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
     fields: [classes.teacherId],
     references: [users.id],
   }), // Class has one teacher
-  students: many(users), // Class has many students
+  students: many(users, { relationName: "studentClass" }), // Class has many students
   lectures: many(lectures), // Class has many lectures
 }));
 
@@ -320,8 +331,8 @@ export const lecturesRelations = relations(lectures, ({ one, many }) => ({
     references: [users.id],
   }), // Lecture has one teacher
   class: one(classes, {
-    fields: [lectures.className],
-    references: [classes.name],
+    fields: [lectures.classId],
+    references: [classes.id],
   }), // Lecture belongs to one class
   attendanceRecords: many(attendance), // Lecture has many attendance records
   attendanceAttempts: many(attendanceAttempts), // Lecture has many attempt records

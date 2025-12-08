@@ -65,14 +65,16 @@ export const createLecture = async (req: AuthRequest, res: Response) => {
       .where(and(eq(classes.teacherId, userId), eq(classes.name, className)))
       .limit(1);
 
+    let classId: string;
     let classNameStr: string;
 
     if (existingClass.length > 0) {
       // Use existing class
+      classId = existingClass[0].id;
       classNameStr = existingClass[0].name;
-      logger.info(`Using existing class: ${classNameStr} for teacher: ${userId}`);
+      logger.info(`Using existing class: ${classNameStr} (ID: ${classId}) for teacher: ${userId}`);
     } else {
-      // Create new class
+      // Create new class with composite key (name, teacherId)
       const newClass = await db
         .insert(classes)
         .values({
@@ -81,8 +83,9 @@ export const createLecture = async (req: AuthRequest, res: Response) => {
         })
         .returning();
 
+      classId = newClass[0].id;
       classNameStr = newClass[0].name;
-      logger.info(`Created new class: ${classNameStr} for teacher: ${userId}`);
+      logger.info(`Created new class: ${classNameStr} (ID: ${classId}) for teacher: ${userId}`);
     }
 
     // Create the lecture
@@ -91,7 +94,7 @@ export const createLecture = async (req: AuthRequest, res: Response) => {
       .insert(lectures)
       .values({
         teacherId: userId,
-        className: classNameStr,
+        classId: classId,
         title: lectureName,
         teacherLatitude: latitude.toString(),
         teacherLongitude: longitude.toString(),
