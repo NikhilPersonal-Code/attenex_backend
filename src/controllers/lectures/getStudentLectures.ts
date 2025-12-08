@@ -48,6 +48,10 @@ export const getStudentLectures = async (req: AuthRequest, res: Response) => {
 
     const studentClassName = student[0].className;
 
+    logger.info(
+      `Student ${userId} className: ${studentClassName || "NOT SET"}`
+    );
+
     if (!studentClassName) {
       return res.status(200).json({
         success: true,
@@ -61,6 +65,10 @@ export const getStudentLectures = async (req: AuthRequest, res: Response) => {
       .select()
       .from(classes)
       .where(eq(classes.name, studentClassName));
+
+    logger.info(
+      `Found ${matchingClasses.length} matching classes for name: ${studentClassName}`
+    );
 
     if (matchingClasses.length === 0) {
       return res.status(200).json({
@@ -87,14 +95,19 @@ export const getStudentLectures = async (req: AuthRequest, res: Response) => {
         teacherLongitude: lectures.teacherLongitude,
       })
       .from(lectures)
-      .crossJoin(classes)
+      .leftJoin(classes, eq(lectures.classId, classes.id))
       .where(
         and(eq(classes.name, studentClassName), eq(lectures.status, "active"))
       )
       .orderBy(lectures.createdAt);
 
     logger.info(
-      `Fetched ${activeLectures.length} active lectures for student: ${userId} in class: ${studentClassName}`
+      `Fetched ${activeLectures.length} active lectures for student: ${userId} in class: ${studentClassName}`,
+      activeLectures.map((l) => ({
+        id: l.id,
+        title: l.title,
+        className: l.className,
+      }))
     );
 
     return res.status(200).json({
