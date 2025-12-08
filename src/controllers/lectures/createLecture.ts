@@ -72,7 +72,9 @@ export const createLecture = async (req: AuthRequest, res: Response) => {
       // Use existing class
       classId = existingClass[0].id;
       classNameStr = existingClass[0].name;
-      logger.info(`Using existing class: ${classNameStr} (ID: ${classId}) for teacher: ${userId}`);
+      logger.info(
+        `Using existing class: ${classNameStr} (ID: ${classId}) for teacher: ${userId}`
+      );
     } else {
       // Create new class with composite key (name, teacherId)
       const newClass = await db
@@ -85,7 +87,9 @@ export const createLecture = async (req: AuthRequest, res: Response) => {
 
       classId = newClass[0].id;
       classNameStr = newClass[0].name;
-      logger.info(`Created new class: ${classNameStr} (ID: ${classId}) for teacher: ${userId}`);
+      logger.info(
+        `Created new class: ${classNameStr} (ID: ${classId}) for teacher: ${userId}`
+      );
     }
 
     // Create the lecture

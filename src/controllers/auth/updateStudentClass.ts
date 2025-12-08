@@ -52,7 +52,9 @@ export const updateStudentClass = async (req: AuthRequest, res: Response) => {
       .where(eq(classes.name, className.trim()));
 
     if (classRecords.length > 0) {
-      logger.info(`Found ${classRecords.length} class(es) with name: ${className.trim()}`);
+      logger.info(
+        `Found ${classRecords.length} class(es) with name: ${className.trim()}`
+      );
     } else {
       logger.info(`No existing class found with name: ${className.trim()}`);
     }
