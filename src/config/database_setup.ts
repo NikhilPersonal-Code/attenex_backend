@@ -125,12 +125,12 @@ export const users = pgTable(
  *
  * Represents a course or class that teachers create and students join.
  * Each class has one teacher and can have multiple students.
- * Uses composite primary key (name, teacherId) to allow same class names for different teachers.
+ * Uses id as primary key with unique constraint on (name, teacherId) to allow same class names for different teachers.
  */
 export const classes = pgTable(
   "classes",
   {
-    id: uuid("id").defaultRandom().notNull(), // Unique identifier for easier references
+    id: uuid("id").primaryKey().defaultRandom(), // Primary key for foreign key references
     name: text("name").notNull(), // Class name (e.g., "Computer Science 101")
     teacherId: uuid("teacher_id")
       .references(() => users.id)
@@ -141,9 +141,8 @@ export const classes = pgTable(
   },
   (table) => {
     return {
-      pk: { name: "classes_pkey", columns: [table.name, table.teacherId] }, // Composite primary key
       teacherIdx: index("classes_teacher_idx").on(table.teacherId), // Find classes by teacher
-      idIdx: uniqueIndex("classes_id_idx").on(table.id), // Unique constraint on id
+      uniqueNameTeacher: uniqueIndex("classes_name_teacher_idx").on(table.name, table.teacherId), // Each teacher can have unique class names
     };
   }
 );
