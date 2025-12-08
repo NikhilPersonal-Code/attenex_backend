@@ -148,6 +148,7 @@ export const linkedInAuth = async (req: Request, res: Response) => {
         })
         .where(eq(users.id, user.id));
 
+        
       logger.info(`LinkedIn OAuth: Updated existing user: ${user.email}`);
     } else {
       // New user - create account with LinkedIn data
