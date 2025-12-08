@@ -87,7 +87,7 @@ export const getStudentLectures = async (req: AuthRequest, res: Response) => {
         teacherLongitude: lectures.teacherLongitude,
       })
       .from(lectures)
-      .leftJoin(classes, eq(lectures.classId, classes.id))
+      .crossJoin(classes)
       .where(
         and(eq(classes.name, studentClassName), eq(lectures.status, "active"))
       )
