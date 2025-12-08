@@ -2,20 +2,18 @@ import nodemailer from "nodemailer";
 import "dotenv/config";
 import { logger } from "./logger";
 import jwt from "jsonwebtoken";
+import axios from "axios";
 
 export const getTransporter = () => {
   // Setup email transporter
+
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // Use TLS
+    secure: true,
     auth: {
       user: process.env.GMAIL_USER!,
       pass: process.env.GMAIL_APP_PASSWORD!,
     },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 5000, // 5 seconds
-    socketTimeout: 10000, // 10 seconds
   });
 };
 
@@ -28,8 +26,6 @@ export const sendVerificationEmail = async ({
   id: string;
   name;
 }) => {
-  // Setup verification token and email
-  const transporter = getTransporter();
   const tokenExpireMinutes = Number(process.env.OTP_EXPIRE_MINUTES || 10);
 
   const verificationToken = jwt.sign(
@@ -88,32 +84,13 @@ export const sendVerificationEmail = async ({
 
   // Send email (do not block signup; log error if sending fails)
   try {
-    // Verify transporter configuration
-    await transporter.verify();
-
-    await transporter.sendMail({
-      from: `"Attenex" <${process.env.GMAIL_USER}>`,
+    await axios.post(`https://attenex-email-backend.vercel.app/send-email`, {
       to: email,
-      subject: "Verify your email — Attenex",
+      subject: "Verify your email for Attenex",
       text,
       html,
     });
-
-    logger.info(`Verification email sent successfully to ${email}`);
-  } catch (sendError: any) {
+  } catch (sendError) {
     logger.error("Failed to send verification email:", sendError);
-
-    // Log specific error details for debugging
-    if (sendError.code === "ETIMEDOUT") {
-      logger.error("SMTP connection timeout - check network/firewall settings");
-    } else if (sendError.code === "EAUTH") {
-      logger.error(
-        "SMTP authentication failed - check GMAIL_USER and GMAIL_APP_PASSWORD"
-      );
-    } else if (sendError.code === "ECONNECTION") {
-      logger.error("Cannot connect to SMTP server - check host and port");
-    }
-
-    throw sendError; // Re-throw to be caught by caller
   }
 };

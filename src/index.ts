@@ -1,3 +1,4 @@
+import "tsconfig-paths/register";
 import { userRoutes } from "@routes/userRoutes";
 import cors from "cors";
 import "dotenv/config";
@@ -8,7 +9,6 @@ import attendanceRoutes from "./routes/attendanceRoutes";
 import lectureRoutes from "./routes/lectureRoutes";
 import { logger } from "./utils/logger";
 import asyncHandler from "@utils/asyncHandler";
-import "tsconfig-paths/lib/register";
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -17,6 +17,7 @@ const requiredEnvVars = [
   "GMAIL_APP_PASSWORD",
   "DATABASE_URL",
 ];
+// -r tsconfig-paths/register
 const missingEnvVars = requiredEnvVars.filter(
   (varName) => !process.env[varName]
 );
