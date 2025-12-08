@@ -1,21 +1,7 @@
-import nodemailer from "nodemailer";
 import "dotenv/config";
 import { logger } from "./logger";
 import jwt from "jsonwebtoken";
 import axios from "axios";
-
-export const getTransporter = () => {
-  // Setup email transporter
-
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    secure: true,
-    auth: {
-      user: process.env.GMAIL_USER!,
-      pass: process.env.GMAIL_APP_PASSWORD!,
-    },
-  });
-};
 
 export const sendVerificationEmail = async ({
   email,
@@ -24,7 +10,7 @@ export const sendVerificationEmail = async ({
 }: {
   email: string;
   id: string;
-  name;
+  name: string;
 }) => {
   const tokenExpireMinutes = Number(process.env.OTP_EXPIRE_MINUTES || 10);
 
