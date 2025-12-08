@@ -1,3 +1,4 @@
+import { deleteUserAccount } from "@controllers/auth/deleteUserAccount";
 import {
   requestPasswordReset,
   resetPassword,
@@ -24,6 +25,11 @@ userRoutes.post("/verify-reset-token", verifyResetToken); // Verify reset token 
 userRoutes.post("/reset-password", resetPassword); // Reset password with token
 userRoutes.post("/verify-user", verifyUser); // Verify user email
 userRoutes.post("/update-role", authenticate, updateUserRole); // Update user role (protected route)
+userRoutes.delete(
+  "/delete-account",
+  authenticate,
+  asyncHandler(deleteUserAccount)
+);
 userRoutes.post(
   "/send-verification-email",
   asyncHandler(sendVerificationEmailController)
