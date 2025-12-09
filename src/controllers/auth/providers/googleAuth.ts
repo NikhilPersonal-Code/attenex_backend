@@ -33,7 +33,14 @@ export const googleAuth = async (req: Request, res: Response) => {
       return res.status(200).json({
         success: true,
         message: "User with this email already exists",
-        user: existingUser[0],
+        user: {
+          id: existingUser[0].id,
+          name: existingUser[0].name,
+          email: existingUser[0].email,
+          photoUrl: existingUser[0].photoUrl,
+          role: existingUser[0].role,
+          className: existingUser[0].className,
+        },
         token,
       });
     }
@@ -53,10 +60,9 @@ export const googleAuth = async (req: Request, res: Response) => {
         id: users.id,
         name: users.name,
         email: users.email,
-        isVerified: users.isVerified,
         photoUrl: users.photoUrl,
-        createdAt: users.createdAt,
         role: users.role,
+        className: users.className,
       });
 
     token = jwt.sign(
