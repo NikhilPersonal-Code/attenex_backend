@@ -1,6 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { Request, Response } from "express";
-import { attendance, db, lectures, users } from "../../config/database_setup";
+import {
+  attendance,
+  classes,
+  db,
+  lectures,
+  users,
+} from "../../config/database_setup";
 import { logger } from "../../utils/logger";
 
 interface AuthRequest extends Request {
@@ -16,7 +22,7 @@ export const addManualAttendance = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     const userRole = req.user?.role;
     const { lectureId } = req.params;
-    const { studentEmail } = req.body;
+    const { studentRollNo } = req.body;
 
     // Verify user is authenticated
     if (!userId) {
@@ -34,17 +40,21 @@ export const addManualAttendance = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    if (!lectureId || !studentEmail) {
+    if (!lectureId || !studentRollNo) {
       return res.status(400).json({
         success: false,
-        message: "Lecture ID and student email are required",
+        message: "Lecture ID and student roll number are required",
       });
     }
 
-    // Check if lecture exists and belongs to the teacher
+    // Check if lecture exists and belongs to the teacher, and get the class info
     const existingLecture = await db
-      .select()
+      .select({
+        lecture: lectures,
+        class: classes,
+      })
       .from(lectures)
+      .innerJoin(classes, eq(lectures.classId, classes.id))
       .where(and(eq(lectures.id, lectureId), eq(lectures.teacherId, userId)))
       .limit(1);
 
@@ -55,17 +65,25 @@ export const addManualAttendance = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Find the student by email
+    const lectureClass = existingLecture[0].class.name;
+
+    // Find the student by roll number and class
     const student = await db
       .select()
       .from(users)
-      .where(and(eq(users.email, studentEmail), eq(users.role, "student")))
+      .where(
+        and(
+          eq(users.rollNo, studentRollNo),
+          eq(users.className, lectureClass),
+          eq(users.role, "student")
+        )
+      )
       .limit(1);
 
     if (student.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Student not found with this email",
+        message: `Student not found with roll number ${studentRollNo} in class ${lectureClass}`,
       });
     }
 
