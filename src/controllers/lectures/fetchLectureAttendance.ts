@@ -57,14 +57,39 @@ export const fetchLectureAttendance = async (
       });
     }
 
-    // Fetch attendance records with student details
+    // Get the lecture with class information
+    const lecture = await db.query.lectures.findFirst({
+      where: eq(lectures.id, lectureId),
+      with: {
+        class: true,
+      },
+    });
+
+    const className = lecture?.class?.name;
+
+    if (!className) {
+      return res.status(404).json({
+        success: false,
+        message: "Class information not found for this lecture",
+      });
+    }
+
+    // Fetch all students in the class
+    const allStudentsInClass = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        rollNo: users.rollNo,
+      })
+      .from(users)
+      .where(and(eq(users.className, className), eq(users.role, "student")));
+
+    // Fetch attendance records for this lecture
     const attendanceRecords = await db
       .select({
         id: attendance.id,
         studentId: attendance.studentId,
-        studentName: users.name,
-        studentEmail: users.email,
-        studentRollNo: users.rollNo,
         joinTime: attendance.joinTime,
         submitTime: attendance.submitTime,
         status: attendance.status,
@@ -73,19 +98,63 @@ export const fetchLectureAttendance = async (
         locationSnapshot: attendance.locationSnapshot,
       })
       .from(attendance)
-      .leftJoin(users, eq(attendance.studentId, users.id))
       .where(eq(attendance.lectureId, lectureId));
 
+    // Create a map of attendance by studentId for quick lookup
+    const attendanceMap = new Map(
+      attendanceRecords.map((record) => [record.studentId, record])
+    );
+
+    // Merge all students with their attendance status
+    const completeAttendanceList = allStudentsInClass.map((student) => {
+      const attendanceRecord = attendanceMap.get(student.id);
+
+      if (attendanceRecord) {
+        // Student has attendance record
+        return {
+          id: attendanceRecord.id,
+          studentId: student.id,
+          studentName: student.name,
+          studentEmail: student.email,
+          studentRollNo: student.rollNo,
+          joinTime: attendanceRecord.joinTime,
+          submitTime: attendanceRecord.submitTime,
+          status: attendanceRecord.status,
+          checkScore: attendanceRecord.checkScore,
+          method: attendanceRecord.method,
+          locationSnapshot: attendanceRecord.locationSnapshot,
+        };
+      } else {
+        // Student was absent
+        return {
+          id: `absent-${student.id}`, // Unique ID for absent students
+          studentId: student.id,
+          studentName: student.name,
+          studentEmail: student.email,
+          studentRollNo: student.rollNo,
+          joinTime: null,
+          submitTime: null,
+          status: "absent" as const,
+          checkScore: 0,
+          method: "auto" as const,
+          locationSnapshot: null,
+        };
+      }
+    });
+
     logger.info(
-      `Fetched ${attendanceRecords.length} attendance records for lecture: ${lectureId}`
+      `Fetched attendance for lecture ${lectureId}: ${attendanceRecords.length} present/incomplete, ${
+        allStudentsInClass.length - attendanceRecords.length
+      } absent`
     );
 
     return res.status(200).json({
       success: true,
       data: {
         lectureId,
+        totalStudents: allStudentsInClass.length,
         attendanceCount: attendanceRecords.length,
-        attendance: attendanceRecords,
+        attendance: completeAttendanceList,
       },
     });
   } catch (error: any) {

@@ -20,9 +20,12 @@ export const getLectureDetails = async (req: AuthRequest, res: Response) => {
 
     const { lectureId } = req.params;
 
-    // Get lecture details
+    // Get lecture details with class information
     const lecture = await db.query.lectures.findFirst({
       where: eq(lectures.id, lectureId),
+      with: {
+        class: true,
+      },
     });
 
     if (!lecture) {
@@ -30,6 +33,8 @@ export const getLectureDetails = async (req: AuthRequest, res: Response) => {
         .status(404)
         .json({ success: false, message: "Lecture not found" });
     }
+
+    const className = (lecture.class as any).name!;
 
     // Count students who joined this lecture
     const studentCount = await db
@@ -39,12 +44,12 @@ export const getLectureDetails = async (req: AuthRequest, res: Response) => {
 
     const presentCount = studentCount[0]?.count || 0;
 
-    // Count total students in this class
+    // Count total students in this class (by className in users table)
     const totalStudentsInClass = await db
       .select({ count: sql<number>`count(*)` })
       .from(users)
       .where(
-        and(eq(users.className, lecture.className), eq(users.role, "student"))
+        and(eq(users.className, className || ""), eq(users.role, "student"))
       );
 
     const totalClassStudents = totalStudentsInClass[0]?.count || 0;
@@ -60,35 +65,37 @@ export const getLectureDetails = async (req: AuthRequest, res: Response) => {
 
     // Get absent students (students in class who didn't join)
     let absentStudents: any[] = [];
-    if (attendedIds.length > 0) {
-      absentStudents = await db
-        .select({
-          id: users.id,
-          name: users.name,
-          email: users.email,
-          rollNo: users.rollNo,
-        })
-        .from(users)
-        .where(
-          and(
-            eq(users.className, lecture.className),
-            eq(users.role, "student"),
-            notInArray(users.id, attendedIds)
-          )
-        );
-    } else {
-      // If no one attended, all students are absent
-      absentStudents = await db
-        .select({
-          id: users.id,
-          name: users.name,
-          email: users.email,
-          rollNo: users.rollNo,
-        })
-        .from(users)
-        .where(
-          and(eq(users.className, lecture.className), eq(users.role, "student"))
-        );
+    if (className) {
+      if (attendedIds.length > 0) {
+        absentStudents = await db
+          .select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            rollNo: users.rollNo,
+          })
+          .from(users)
+          .where(
+            and(
+              eq(users.className, className),
+              eq(users.role, "student"),
+              notInArray(users.id, attendedIds)
+            )
+          );
+      } else {
+        // If no one attended, all students are absent
+        absentStudents = await db
+          .select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            rollNo: users.rollNo,
+          })
+          .from(users)
+          .where(
+            and(eq(users.className, className), eq(users.role, "student"))
+          );
+      }
     }
 
     return res.status(200).json({

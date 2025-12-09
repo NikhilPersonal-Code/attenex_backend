@@ -142,7 +142,10 @@ export const classes = pgTable(
   (table) => {
     return {
       teacherIdx: index("classes_teacher_idx").on(table.teacherId), // Find classes by teacher
-      uniqueNameTeacher: uniqueIndex("classes_name_teacher_idx").on(table.name, table.teacherId), // Each teacher can have unique class names
+      uniqueNameTeacher: uniqueIndex("classes_name_teacher_idx").on(
+        table.name,
+        table.teacherId
+      ), // Each teacher can have unique class names
     };
   }
 );
@@ -393,6 +396,11 @@ export const db = drizzle(pool, {
     attendanceAttempts,
     attendancePings,
     geofenceLogs,
+    usersRelations,
+    classesRelations,
+    lecturesRelations,
+    attendanceRelations,
+    attendanceAttemptsRelations,
   },
 });
 
