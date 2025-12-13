@@ -9,6 +9,13 @@ import attendanceRoutes from "./routes/attendanceRoutes";
 import lectureRoutes from "./routes/lectureRoutes";
 import { logger } from "./utils/logger";
 import asyncHandler from "@utils/asyncHandler";
+import admin, { ServiceAccount } from "firebase-admin";
+
+admin.initializeApp({
+  credential: admin.credential.cert(
+    JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string) as ServiceAccount
+  ),
+});
 
 // Validate required environment variables
 const requiredEnvVars = [

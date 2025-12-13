@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { classes, db, lectures } from "../../config/database_setup";
 import { logger } from "../../utils/logger";
 import { generatePasscode } from "../../utils/passcode";
+import { sendNotification } from "@utils/sendNotification";
 
 interface AuthRequest extends Request {
   user?: {
@@ -112,6 +113,7 @@ export const createLecture = async (req: AuthRequest, res: Response) => {
     const newLecture = newLectures[0];
 
     logger.info(`Lecture created: ${newLecture.id} by teacher: ${userId}`);
+    await sendNotification(className, lectureName, duration);
 
     return res.status(201).json({
       success: true,
