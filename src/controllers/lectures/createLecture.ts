@@ -113,7 +113,7 @@ export const createLecture = async (req: AuthRequest, res: Response) => {
     const newLecture = newLectures[0];
 
     logger.info(`Lecture created: ${newLecture.id} by teacher: ${userId}`);
-    await sendNotification(className, lectureName, duration);
+    await sendNotification(className, lectureName, newLecture.id, duration);
 
     return res.status(201).json({
       success: true,
