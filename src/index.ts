@@ -10,10 +10,11 @@ import lectureRoutes from "./routes/lectureRoutes";
 import { logger } from "./utils/logger";
 import asyncHandler from "@utils/asyncHandler";
 import admin, { ServiceAccount } from "firebase-admin";
-import serviceAccount from "../personal/services.json";
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount as ServiceAccount),
+  credential: admin.credential.cert(
+    JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) as ServiceAccount
+  ),
 });
 
 // Validate required environment variables
