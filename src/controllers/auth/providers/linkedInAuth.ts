@@ -148,7 +148,6 @@ export const linkedInAuth = async (req: Request, res: Response) => {
         })
         .where(eq(users.id, user.id));
 
-        
       logger.info(`LinkedIn OAuth: Updated existing user: ${user.email}`);
     } else {
       // New user - create account with LinkedIn data
@@ -197,16 +196,18 @@ export const linkedInAuth = async (req: Request, res: Response) => {
      * Send back user data and JWT token to frontend.
      * Frontend will store this data for the user session.
      */
+    const safeUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      photoUrl: user.photoUrl,
+      className: user.className,
+      oauthProvider: user.oauthProvider || null,
+    };
     res.json({
       success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        photoUrl: user.photoUrl,
-        className: user.className,
-      },
+      user: safeUser,
       token,
     });
   } catch (error: any) {

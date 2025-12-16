@@ -40,6 +40,7 @@ export const googleAuth = async (req: Request, res: Response) => {
           photoUrl: existingUser[0].photoUrl,
           role: existingUser[0].role,
           className: existingUser[0].className,
+          oauthProvider: existingUser[0].oauthProvider || null,
         },
         token,
       });
@@ -63,6 +64,7 @@ export const googleAuth = async (req: Request, res: Response) => {
         photoUrl: users.photoUrl,
         role: users.role,
         className: users.className,
+        oauthProvider: users.oauthProvider || null,
       });
 
     token = jwt.sign(

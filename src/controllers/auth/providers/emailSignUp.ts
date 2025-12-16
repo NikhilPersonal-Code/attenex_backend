@@ -40,21 +40,13 @@ export const emailSignUp = async (req: Request, res: Response) => {
           email,
           passwordHash: passwordHash,
           isVerified: false,
+          oauthProvider: "email",
         })
         .returning({
           id: users.id,
           name: users.name,
           email: users.email,
-          role: users.role,
-          photoUrl: users.photoUrl,
-          isVerified: users.isVerified,
-          createdAt: users.createdAt,
         });
-      const token = jwt.sign(
-        { id: newUser[0].id, role: newUser[0].role },
-        (process.env.JWT_SECRET as string) || "secret",
-        { expiresIn: 10 * 24 * 60 * 60 } // 10 days expiration
-      );
 
       try {
         await sendVerificationEmail({
@@ -69,14 +61,6 @@ export const emailSignUp = async (req: Request, res: Response) => {
       return res.status(201).json({
         success: true,
         message: "User registered successfully",
-        user: {
-          id: newUser[0].id,
-          email: newUser[0].email,
-          name: newUser[0].name,
-          photoUrl: newUser[0].photoUrl,
-          role: newUser[0].role,
-        },
-        token,
       });
     }
   } catch (error) {

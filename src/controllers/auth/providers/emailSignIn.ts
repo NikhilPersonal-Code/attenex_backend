@@ -59,6 +59,7 @@ export const emailSignIn = async (req: Request, res: Response) => {
       className: userFound.className,
       isVerified: userFound.isVerified,
       createdAt: userFound.createdAt,
+      oauthProvider: userFound.oauthProvider || null,
     };
 
     return res.status(200).json({ success: true, user: safeUser, token });
