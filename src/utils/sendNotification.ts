@@ -23,7 +23,7 @@ export const sendNotification = async (
     },
     android: {
       notification: {
-        body: `Duration ${duration}`,
+        body: `Duration ${duration} Minutes`,
         title: `${lectureTitle} has started`,
         priority: "max",
         channelId:"attenex"
