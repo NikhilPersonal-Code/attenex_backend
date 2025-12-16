@@ -70,7 +70,7 @@ export const sendVerificationEmail = async ({
 
   // Send email (do not block signup; log error if sending fails)
   try {
-    await axios.post(`http://localhost:3000/send-email`, {
+    await axios.post(`https://attenex-email-backend.vercel.app/send-email`, {
       to: email,
       subject: "Verify your email for Attenex",
       text,
