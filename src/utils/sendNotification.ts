@@ -25,9 +25,8 @@ export const sendNotification = async (
       notification: {
         body: `Duration ${duration}`,
         title: `${lectureTitle} has started`,
-        // channelId: "high-priority",`
         priority: "max",
-        icon: "ic_notification",
+        channelId:"attenex"
         // defaultLightSettings: true,
         // lightSettings: {
         //   color: "#00AA00",
@@ -35,8 +34,7 @@ export const sendNotification = async (
         //   lightOffDurationMillis: 500,
         // },
         // imageUrl: "https://attenex.vercel.app/icon.png",
-
-        // // imageUrl: "https://attenex.vercel.app/notification-attachment.png",
+        // imageUrl: "https://attenex.vercel.app/notification-attachment.png",
       },
     },
     data: {
