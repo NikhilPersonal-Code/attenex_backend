@@ -13,6 +13,8 @@ const asyncHandler = (
         return res
           .json({
             error: "Internal Server Error Occurred",
+            message: err.message,
+            success: false,
           })
           .status(501);
       } finally {

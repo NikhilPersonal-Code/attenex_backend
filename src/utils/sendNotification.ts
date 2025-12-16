@@ -17,16 +17,27 @@ export const sendNotification = async (
           lectureId,
         },
       },
+      fcmOptions: {
+        imageUrl: "https://attenex.vercel.app/notification-attachment.png",
+      },
     },
     android: {
       notification: {
-        channelId: "high-priority",
+        body: `Duration ${duration}`,
+        title: `${lectureTitle} has started`,
+        // channelId: "high-priority",`
         priority: "max",
+        icon: "ic_notification",
+        // defaultLightSettings: true,
+        // lightSettings: {
+        //   color: "#00AA00",
+        //   lightOnDurationMillis: 1000,
+        //   lightOffDurationMillis: 500,
+        // },
+        // imageUrl: "https://attenex.vercel.app/icon.png",
+
+        // // imageUrl: "https://attenex.vercel.app/notification-attachment.png",
       },
-    },
-    notification: {
-      body: `Duration ${duration}`,
-      title: `Attend ${lectureTitle} Lecture Now !!`,
     },
     data: {
       lectureId,

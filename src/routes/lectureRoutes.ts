@@ -13,6 +13,8 @@ import { getStudentLectures } from "../controllers/lectures/getStudentLectures";
 import { getTeacherClasses } from "../controllers/lectures/getTeacherClasses";
 import { updateLecture } from "../controllers/lectures/updateLecture";
 import { authenticate } from "../middleware/auth";
+import { getStudentLecture } from "@controllers/lectures/getStudentLecture";
+import asyncHandler from "@utils/asyncHandler";
 
 const router = express.Router();
 
@@ -21,6 +23,11 @@ router.post("/create", authenticate, createLecture);
 router.get("/all", authenticate, getAllLectures);
 router.get("/active", authenticate, getActiveLectures);
 router.get("/student/lectures", authenticate, getStudentLectures);
+router.get(
+  "/student/:lectureId",
+  authenticate,
+  asyncHandler(getStudentLecture)
+);
 router.get("/classes/all", authenticate, getAllClasses);
 router.get("/classes", authenticate, getTeacherClasses);
 router.get("/:lectureId/details", authenticate, getLectureDetails);
