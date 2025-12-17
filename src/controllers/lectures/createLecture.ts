@@ -114,6 +114,7 @@ export const createLecture = async (req: AuthRequest, res: Response) => {
 
     logger.info(`Lecture created: ${newLecture.id} by teacher: ${userId}`);
     await sendNotification(className, lectureName, newLecture.id, duration);
+    await scheduleLectureEnd(newLecture.id, parseInt(duration, 10));
 
     return res.status(201).json({
       success: true,

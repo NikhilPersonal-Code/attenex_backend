@@ -1,4 +1,4 @@
-import { getMessaging } from "firebase-admin/messaging";
+import { message } from "@services/firebase";
 
 export const sendNotification = async (
   className: string,
@@ -6,7 +6,7 @@ export const sendNotification = async (
   lectureId: string,
   duration: string
 ) => {
-  await getMessaging().send({
+  await message.send({
     topic: className,
     apns: {
       payload: {
