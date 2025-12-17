@@ -4,6 +4,7 @@ import { classes, db, lectures } from "../../config/database_setup";
 import { logger } from "../../utils/logger";
 import { generatePasscode } from "../../utils/passcode";
 import { sendNotification } from "@utils/sendNotification";
+import { scheduleLectureEnd } from "@utils/lecture";
 
 interface AuthRequest extends Request {
   user?: {

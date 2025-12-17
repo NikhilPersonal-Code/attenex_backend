@@ -1,7 +1,5 @@
 import db, { lectures } from "@config/database_setup";
-import { message } from "@services/firebase";
 import { eq } from "drizzle-orm";
-import { getMessaging } from "firebase-admin/messaging";
 
 export const lectureClosure = async (lectureId: string) => {
   const lecture = (
