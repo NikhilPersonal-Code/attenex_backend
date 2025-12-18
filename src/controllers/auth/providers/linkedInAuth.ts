@@ -183,7 +183,6 @@ export const linkedInAuth = async (req: Request, res: Response) => {
     const token = jwt.sign(
       {
         id: user.id,
-        email: user.email,
         role: user.role,
       },
       JWT_SECRET,

@@ -5,8 +5,13 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { logger } from "@utils/logger";
 
+export interface User {
+  role: "teacher" | "student";
+  id: string;
+}
+
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: User;
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
@@ -22,8 +27,9 @@ export const authenticate = async (
       return res.status(401).json({ error: "Missing authorization header" });
     }
     const token = authHeader.split(" ")[1];
-    const payload: any = jwt.verify(token, JWT_SECRET);
-    logger.info("Payload : ",payload);
+    const payload = jwt.verify(token, JWT_SECRET) as User;
+
+    logger.info("Payload : ", payload);
 
     // Optional: validate that user still exists in database
     const existingUsers = await db

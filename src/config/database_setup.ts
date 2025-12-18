@@ -99,6 +99,7 @@ export const users = pgTable(
     role: userRoleEnum("role"), // teacher or student - determines permissions
     className: text("class_name"), // Student's assigned class (null for teachers)
     rollNo: varchar("roll_no", { length: 20 }), // Student roll number (unique per class, null for teachers)
+    deviceToken: varchar("device_token"),
     passwordHash: text("password_hash"), // Only for traditional auth users (bcrypt hash)
     oauthProvider: text("oauth_provider"), // 'linkedin', 'google', etc. - null for traditional auth
     oauthId: text("oauth_id"), // Provider's unique user ID - never changes, used for account linking

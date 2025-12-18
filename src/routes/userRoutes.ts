@@ -8,6 +8,7 @@ import { sendVerificationEmailController } from "@controllers/auth/sendVerificat
 import { signInUser } from "@controllers/auth/signInUser";
 import { signUpUser } from "@controllers/auth/signUpUser";
 import { updateStudentClass } from "@controllers/auth/updateStudentClass";
+import { updateUserDeviceToken } from "@controllers/auth/updateUserDeviceToken";
 import { updateUserRole } from "@controllers/auth/updateUserRole";
 import { verifyUser } from "@controllers/auth/verifyUser";
 import { authenticate } from "@middleware/auth";
@@ -35,3 +36,8 @@ userRoutes.post(
   asyncHandler(sendVerificationEmailController)
 ); // Update user role (protected route)
 userRoutes.post("/update-class", authenticate, updateStudentClass); // Update student class (protected route)
+userRoutes.post(
+  "/update-device-token",
+  authenticate,
+  asyncHandler(updateUserDeviceToken)
+); // Update teacher's phone token

@@ -1,4 +1,6 @@
-import db, { lectures } from "@config/database_setup";
+import db, { lectures, users } from "@config/database_setup";
+import { message } from "@services/firebase";
+import { logger } from "@utils/logger";
 import { eq } from "drizzle-orm";
 
 export const lectureClosure = async (lectureId: string) => {
@@ -7,21 +9,36 @@ export const lectureClosure = async (lectureId: string) => {
       .select({
         endedAt: lectures.endedAt,
         status: lectures.status,
+        teacherId: lectures.teacherId,
       })
       .from(lectures)
       .where(eq(lectures.id, lectureId))
       .limit(1)
   )[0];
 
+  logger.info("Lecture Ending JOB Started....");
+
   if (lecture.status === "ended") return;
 
-  await db.update(lectures).set({ endedAt: new Date(), status: "ended" });
+  const endedAt = new Date();
+  await db.update(lectures).set({ endedAt, status: "ended" });
 
-    // TODO: Implement Messaging Logic To Teacher's Phone To Receive Lecture Ended Logic.
-    //   message.send({
-    //     token: "",
-    //     data:{
+  const user = (
+    await db
+      .select({ token: users.deviceToken })
+      .from(users)
+      .where(eq(users.id, lecture.teacherId))
+      .limit(1)
+  )[0];
 
-    //     },
-    //   });
+  if (user.token !== "") {
+    await message.send({
+      token: user.token,
+      data: {
+        lectureId,
+        ended: "true",
+        endedAt: endedAt.toDateString(),
+      },
+    });
+  }
 };
