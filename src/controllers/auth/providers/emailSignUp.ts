@@ -4,7 +4,6 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@utils/email";
 import { logger } from "@utils/logger";
-import jwt from "jsonwebtoken";
 
 export const emailSignUp = async (req: Request, res: Response) => {
   try {
@@ -40,7 +39,6 @@ export const emailSignUp = async (req: Request, res: Response) => {
           email,
           passwordHash: passwordHash,
           isVerified: false,
-          oauthProvider: "email",
         })
         .returning({
           id: users.id,
