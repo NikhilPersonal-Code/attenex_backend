@@ -37,7 +37,7 @@ export const authenticate = async (
       .from(users)
       .where(eq(users.id, payload.id))
       .limit(1);
-    if (!existingUsers?.length) {
+    if (!existingUsers && existingUsers.length === 0) {
       return res.status(401).json({ error: "User not found" });
     }
 

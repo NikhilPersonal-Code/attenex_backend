@@ -36,19 +36,89 @@ const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET || "";
 export const linkedInAuth = async (req: Request, res: Response) => {
   try {
     // Extract authorization code and redirect URI from request
-    const { email, picture, name, sub } = req.body;
+    const { code, redirectUri } = req.body;
 
     // Validate required parameters
-    if (!email || !picture || !name || !sub) {
+    if (!code || !redirectUri) {
       return res.status(400).json({
-        error: "Missing required fields: email,name,sub and picture",
+        error: "Missing required fields: code and redirectUri",
       });
     }
 
     logger.info("LinkedIn OAuth: Starting token exchange process");
 
     /**
-     * Step 1: Check if User Exists in Database
+     * Step 1: Exchange Authorization Code for Access Token
+     *
+     * This is the most critical security step. We send:
+     * - grant_type: 'authorization_code' (standard OAuth flow)
+     * - code: The authorization code from LinkedIn
+     * - client_id & client_secret: Our LinkedIn app credentials
+     * - redirect_uri: Must match exactly what was used in authorization
+     *
+     * LinkedIn responds with:
+     * - access_token: Bearer token for API calls
+     * - expires_in: Token lifetime (typically 60 days)
+     * - token_type: Usually "Bearer"
+     */
+    const tokenResponse = await axios.post(
+      "https://www.linkedin.com/oauth/v2/accessToken",
+      // Use URLSearchParams for proper form encoding
+      new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        client_id: LINKEDIN_CLIENT_ID,
+        client_secret: LINKEDIN_CLIENT_SECRET, // ⚠️ Never expose this to frontend
+        redirect_uri: redirectUri,
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const { access_token } = tokenResponse.data;
+
+    // Validate that we received an access token
+    if (!access_token) {
+      throw new Error("No access token received from LinkedIn");
+    }
+
+    logger.info("LinkedIn OAuth: Access token obtained successfully");
+
+    /**
+     * Step 2: Fetch User Profile from LinkedIn
+     *
+     * Using the access token, we can now call LinkedIn's user info endpoint
+     * to get the authenticated user's profile data.
+     *
+     * This endpoint returns:
+     * - sub: Unique user identifier (use as oauthId)
+     * - name: Full display name
+     * - email: Primary email address
+     * - picture: Profile picture URL (if available)
+     */
+    const profileResponse = await axios.get(
+      "https://api.linkedin.com/v2/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    const linkedinUser = profileResponse.data;
+
+    logger.info(`LinkedIn OAuth: Retrieved profile for ${linkedinUser.email}`);
+    logger.info(
+      `LinkedIn OAuth: Retrieved profile for ${JSON.stringify(
+        profileResponse.data
+      )}`
+    );
+
+    /**
+     * Step 3: Check if User Exists in Database
      *
      * We use the email as the primary identifier since it's unique and persistent.
      * LinkedIn users are pre-verified, so we set isVerified: true.
@@ -59,7 +129,7 @@ export const linkedInAuth = async (req: Request, res: Response) => {
     const existingUsers = await db
       .select()
       .from(users)
-      .where(eq(users.email, email))
+      .where(eq(users.email, linkedinUser.email))
       .limit(1);
 
     let user;
@@ -70,10 +140,10 @@ export const linkedInAuth = async (req: Request, res: Response) => {
       await db
         .update(users)
         .set({
-          name: name || user.name, // Update name if changed
+          name: linkedinUser.name || user.name, // Update name if changed
           oauthProvider: "linkedin",
-          oauthId: sub, // LinkedIn's unique user ID
-          photoUrl: picture || user.photoUrl,
+          oauthId: linkedinUser.sub, // LinkedIn's unique user ID
+          photoUrl: linkedinUser.picture || user.photoUrlz,
           updatedAt: new Date(),
         })
         .where(eq(users.id, user.id));
@@ -84,11 +154,11 @@ export const linkedInAuth = async (req: Request, res: Response) => {
       const newUsers = await db
         .insert(users)
         .values({
-          email: email,
-          name: name || email.split("@")[0], // Fallback name
+          email: linkedinUser.email,
+          name: linkedinUser.name || linkedinUser.email.split("@")[0], // Fallback name
           oauthProvider: "linkedin",
-          oauthId: sub,
-          photoUrl: picture,
+          oauthId: linkedinUser.sub,
+          photoUrl: linkedinUser.picture || linkedinUser.picture.url,
           isVerified: true, // LinkedIn users are pre-verified
         })
         .returning();
