@@ -1,6 +1,7 @@
 import "tsconfig-paths/register";
 import admin, { ServiceAccount } from "firebase-admin";
 import "dotenv/config";
+import morgan from "morgan";
 
 admin.initializeApp({
   credential: admin.credential.cert(
@@ -17,8 +18,11 @@ import attendanceRoutes from "./routes/attendanceRoutes";
 import lectureRoutes from "./routes/lectureRoutes";
 import { logger } from "./utils/logger";
 import asyncHandler from "@utils/asyncHandler";
+import { userRouteLimiter } from "@utils/rateLimters";
 
 // -r tsconfig-paths/register
+
+// TODO: fix security vulnerabilties in npm pacakage.
 
 /**
  * Attenex Backend Server
@@ -66,6 +70,9 @@ app.set("io", io);
 // Server configuration
 const PORT = process.env.PORT || 5000;
 
+// HTTP reuqest logs
+app.use(morgan("dev"));
+
 /**
  * CORS Middleware
  *
@@ -90,7 +97,7 @@ app.use(express.json());
  * - Google OAuth user creation/verification
  * - User data retrieval and updates
  */
-app.use("/api/users", userRoutes);
+app.use("/api/users",userRouteLimiter, userRoutes);
 
 /**
  * Lecture Management Routes
