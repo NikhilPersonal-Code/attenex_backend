@@ -6,3 +6,10 @@ export const userRouteLimiter = rateLimit({
   limit: 15,
   legacyHeaders: false,
 });
+
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 10000,
+  standardHeaders: true,
+  limit: 5,
+  legacyHeaders: false,
+});

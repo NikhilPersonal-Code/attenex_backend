@@ -19,6 +19,7 @@ import lectureRoutes from "./routes/lectureRoutes";
 import { logger } from "./utils/logger";
 import asyncHandler from "@utils/asyncHandler";
 import { userRouteLimiter } from "@utils/rateLimters";
+import { User } from "@middleware/auth";
 
 // -r tsconfig-paths/register
 
@@ -97,7 +98,7 @@ app.use(express.json());
  * - Google OAuth user creation/verification
  * - User data retrieval and updates
  */
-app.use("/api/users",userRouteLimiter, userRoutes);
+app.use("/api/users", userRouteLimiter, userRoutes);
 
 /**
  * Lecture Management Routes
@@ -144,7 +145,11 @@ io.on("connection", (socket) => {
   });
 
   // Leave a lecture room
-  socket.on("leaveLecture", (lectureId: string) => {
+  socket.on("leaveLecture", (lectureId: string, role: User["role"]) => {
+    logger.info("onStudentLeaved : " + lectureId);
+    if (role === "student") {
+      socket.emit("studentLeavedLecture", lectureId);
+    }
     socket.leave(`lecture-${lectureId}`);
     logger.info(`Socket ${socket.id} left lecture-${lectureId}`);
   });

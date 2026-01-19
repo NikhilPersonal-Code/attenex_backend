@@ -13,6 +13,7 @@ import { updateUserRole } from "@controllers/auth/updateUserRole";
 import { verifyUser } from "@controllers/auth/verifyUser";
 import { authenticate } from "@middleware/auth";
 import asyncHandler from "@utils/asyncHandler";
+import { forgotPasswordLimiter } from "@utils/rateLimters";
 import "dotenv/config";
 import { Router } from "express";
 
@@ -21,7 +22,11 @@ export const userRoutes = Router();
 // Use clear, action-based routes and POST for operations that carry a request body
 userRoutes.post("/signup", signUpUser);
 userRoutes.post("/signin", signInUser);
-userRoutes.post("/forgot-password", requestPasswordReset); // Request password reset email
+userRoutes.post(
+  "/forgot-password",
+  forgotPasswordLimiter,
+  requestPasswordReset
+); // Request password reset email
 userRoutes.post("/verify-reset-token", verifyResetToken); // Verify reset token is valid
 userRoutes.post("/reset-password", resetPassword); // Reset password with token
 userRoutes.post("/verify-user", verifyUser); // Verify user email
