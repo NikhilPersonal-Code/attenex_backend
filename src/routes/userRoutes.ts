@@ -10,6 +10,7 @@ import { signUpUser } from "@controllers/auth/signUpUser";
 import { updateStudentClass } from "@controllers/auth/updateStudentClass";
 import { updateUserDeviceToken } from "@controllers/auth/updateUserDeviceToken";
 import { updateUserRole } from "@controllers/auth/updateUserRole";
+import { updateUserFullName } from "@controllers/auth/users/updateUserFullName";
 import { verifyUser } from "@controllers/auth/verifyUser";
 import { authenticate } from "@middleware/auth";
 import asyncHandler from "@utils/asyncHandler";
@@ -46,3 +47,11 @@ userRoutes.post(
   authenticate,
   asyncHandler(updateUserDeviceToken)
 ); // Update teacher's phone token
+userRoutes.patch(
+  "/full-name",
+  authenticate,
+  asyncHandler(updateUserFullName)
+); // Update teacher's phone token
+
+
+// TODO: how to invalidate token.

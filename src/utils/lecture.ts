@@ -24,7 +24,6 @@ export const scheduleLectureEnd = async (
 
   const scheduleTimings = `${minutes} ${hours} * * *`;
 
-  console.log(scheduleTimings);
 
   cron.schedule(scheduleTimings, async () => await lectureClosure(lectureId), {
     maxExecutions: 1,

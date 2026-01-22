@@ -19,9 +19,9 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 export const authenticate = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
-  try {   
+  try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Missing authorization header" });

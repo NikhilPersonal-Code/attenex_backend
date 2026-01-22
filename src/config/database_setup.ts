@@ -118,7 +118,7 @@ export const users = pgTable(
     index("users_role_idx").on(table.role), // Filter users by role
     index("users_class_idx").on(table.className), // Find students in a class
     index("users_class_rollno_idx").on(table.className, table.rollNo), // Unique roll numbers per class
-  ]
+  ],
 );
 
 /**
@@ -145,10 +145,10 @@ export const classes = pgTable(
       teacherIdx: index("classes_teacher_idx").on(table.teacherId), // Find classes by teacher
       uniqueNameTeacher: uniqueIndex("classes_name_teacher_idx").on(
         table.name,
-        table.teacherId
+        table.teacherId,
       ), // Each teacher can have unique class names
     };
-  }
+  },
 );
 
 /**
@@ -183,7 +183,7 @@ export const lectures = pgTable(
   (table) => [
     index("lectures_teacher_status_idx").on(table.teacherId, table.status), // Active lectures by teacher
     index("lectures_class_idx").on(table.classId), // Lectures in a class
-  ]
+  ],
 );
 
 /**
@@ -212,7 +212,7 @@ export const attendanceAttempts = pgTable(
   (table) => [
     index("attempts_lecture_idx").on(table.lectureId), // Attempts for a lecture
     index("attempts_student_idx").on(table.studentId), // Attempts by a student
-  ]
+  ],
 );
 
 /**
@@ -243,7 +243,7 @@ export const attendance = pgTable(
     uniqueIndex("attendance_unique_idx").on(table.lectureId, table.studentId), // One attendance per student per lecture
     index("attendance_lecture_idx").on(table.lectureId), // Attendance for a lecture
     index("attendance_student_idx").on(table.studentId), // Attendance by a student
-  ]
+  ],
 );
 
 /**
@@ -269,7 +269,7 @@ export const attendancePings = pgTable(
   },
   (table) => [
     index("pings_lecture_student_idx").on(table.lectureId, table.studentId),
-  ]
+  ],
 );
 
 /**
@@ -293,7 +293,7 @@ export const geofenceLogs = pgTable(
   },
   (table) => [
     index("geofence_lecture_student_idx").on(table.lectureId, table.studentId),
-  ]
+  ],
 );
 
 // ==================== RELATIONS ====================
@@ -363,7 +363,7 @@ export const attendanceAttemptsRelations = relations(
       fields: [attendanceAttempts.studentId],
       references: [users.id],
     }), // Attempt belongs to one student
-  })
+  }),
 );
 
 // ==================== DATABASE CONNECTION ====================
@@ -375,11 +375,7 @@ export const attendanceAttemptsRelations = relations(
  * Environment variables configure the connection parameters.
  */
 const pool = new Pool({
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT) || 5432,
+  connectionString: process.env.DATABASE_URL,
 });
 
 /**
