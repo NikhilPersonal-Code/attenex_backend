@@ -2,6 +2,7 @@ import "dotenv/config";
 import { logger } from "./logger";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import { EMAIL_SERVER_ENDPOINT } from "../constants/endpoints";
 
 export const sendVerificationEmail = async ({
   email,
@@ -17,10 +18,10 @@ export const sendVerificationEmail = async ({
   const verificationToken = jwt.sign(
     { userId: id, type: "email_verify" },
     (process.env.JWT_SECRET as string) || "secret",
-    { expiresIn: `${tokenExpireMinutes}m` }
+    { expiresIn: `${tokenExpireMinutes}m` },
   );
   const verificationLink = `https://attenex.vercel.app/auth/verify-email?token=${encodeURIComponent(
-    verificationToken
+    verificationToken,
   )}&email=${encodeURIComponent(email)}`;
 
   // Setup email transporter
@@ -70,7 +71,7 @@ export const sendVerificationEmail = async ({
 
   // Send email (do not block signup; log error if sending fails)
   try {
-    await axios.post(`https://attenex-email-backend.vercel.app/send-email`, {
+    await axios.post(EMAIL_SERVER_ENDPOINT, {
       to: email,
       subject: "Verify your email for Attenex",
       text,
